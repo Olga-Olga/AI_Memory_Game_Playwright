@@ -1,0 +1,185 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-display: 'Orbitron', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Rajdhani', ui-sans-serif, system-ui, sans-serif;
+  --color-void: #05060f;
+  --color-panel: rgb(14 17 38 / 0.72);
+  --color-edge: rgb(148 163 255 / 0.14);
+  --color-neon-cyan: #22d3ee;
+  --color-neon-pink: #e879f9;
+  --color-neon-gold: #fbbf24;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-void);
+  color: #e2e8f0;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* ---------- Background ---------- */
+.bg-grid {
+  background-image:
+    linear-gradient(rgb(99 102 241 / 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(99 102 241 / 0.07) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse at 50% 40%, black 30%, transparent 75%);
+}
+.orb {
+  position: absolute;
+  border-radius: 9999px;
+  /* A soft gradient instead of filter: blur() — same glow, far cheaper to repaint. */
+  background: radial-gradient(circle, color-mix(in oklab, var(--orb) 45%, transparent), transparent 68%);
+  will-change: transform;
+  animation: orb-float 18s ease-in-out infinite alternate;
+}
+@keyframes orb-float {
+  to { transform: translate(6vw, -4vh) scale(1.15); }
+}
+
+/* ---------- Glass panels ---------- */
+.glass {
+  background: var(--color-panel);
+  border: 1px solid var(--color-edge);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.4), 0 20px 50px -20px rgb(0 0 0 / 0.8), inset 0 1px 0 rgb(255 255 255 / 0.04);
+}
+.text-glow {
+  text-shadow: 0 0 18px currentColor;
+}
+.neon-btn {
+  position: relative;
+  font-family: var(--font-display);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #05060f;
+  background: linear-gradient(135deg, #22d3ee, #a78bfa 55%, #e879f9);
+  box-shadow: 0 0 24px -4px rgb(34 211 238 / 0.7), 0 0 50px -10px rgb(232 121 249 / 0.6);
+  transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+.neon-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+.neon-btn:active { transform: translateY(0) scale(0.98); }
+
+.icon-btn {
+  display: grid;
+  place-items: center;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-edge);
+  background: rgb(255 255 255 / 0.03);
+  color: #cbd5e1;
+  transition: all 0.15s ease;
+}
+.icon-btn:hover { color: white; border-color: rgb(34 211 238 / 0.5); box-shadow: 0 0 16px -4px rgb(34 211 238 / 0.6); }
+
+:focus-visible {
+  outline: 2px solid #22d3ee;
+  outline-offset: 2px;
+}
+
+/* ---------- Cards ---------- */
+.board {
+  --radius: calc(var(--cell) * 0.16);
+  /* No backdrop blur behind hundreds of cards — it re-renders on every background frame. */
+  backdrop-filter: none;
+  background: rgb(10 12 30 / 0.88);
+}
+.card {
+  position: relative;
+  width: var(--cell);
+  height: var(--cell);
+  perspective: calc(var(--cell) * 6);
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.card:disabled { cursor: default; }
+.card-inner {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transition: transform 0.42s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+.card.is-up .card-inner { transform: rotateY(180deg); }
+.card-face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.card-back {
+  background:
+    radial-gradient(circle at 50% 50%, rgb(129 140 248 / 0.35) 0 12%, transparent 13%),
+    repeating-linear-gradient(45deg, rgb(255 255 255 / 0.04) 0 2px, transparent 2px 7px),
+    linear-gradient(145deg, #1e1b4b, #0f172a 60%, #1a1033);
+  border: 1px solid rgb(129 140 248 / 0.28);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 4px 12px -6px black;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+.card:not(:disabled):hover .card-back {
+  border-color: rgb(34 211 238 / 0.75);
+  box-shadow: 0 0 calc(var(--cell) * 0.35) -2px rgb(34 211 238 / 0.55), inset 0 0 calc(var(--cell) * 0.25) rgb(34 211 238 / 0.15);
+}
+.card:not(:disabled):hover:not(.is-up) .card-inner { transform: translateY(-2px); }
+.card-front {
+  transform: rotateY(180deg);
+  background: linear-gradient(160deg, #111634, #090b1c);
+  border: 1px solid color-mix(in oklab, var(--accent) 55%, transparent);
+  color: var(--accent);
+}
+.card-icon {
+  width: 58%;
+  height: 58%;
+}
+/* Glow only on face-up cards, so hidden ones stay cheap to paint. */
+.card.is-up .card-front {
+  box-shadow: 0 0 calc(var(--cell) * 0.3) -4px var(--accent), inset 0 0 calc(var(--cell) * 0.3) color-mix(in oklab, var(--accent) 18%, transparent);
+}
+.card.is-up:not(.is-matched) .card-icon {
+  filter: drop-shadow(0 0 calc(var(--cell) * 0.08) var(--accent));
+}
+.card.is-matched .card-front {
+  animation: match-pop 0.5s ease-out;
+  background: linear-gradient(160deg, color-mix(in oklab, var(--accent) 22%, #0b0f26), #090b1c);
+}
+.card.is-matched { opacity: 0.55; transition: opacity 0.6s 0.4s; }
+.card.is-wrong .card-front {
+  border-color: #fb7185;
+  box-shadow: 0 0 calc(var(--cell) * 0.4) -2px #fb7185;
+  animation: shake 0.4s 0.25s;
+}
+.card.is-correct .card-front { animation: match-pop 0.4s ease-out; }
+@keyframes match-pop {
+  40% { transform: rotateY(180deg) scale(1.14); filter: brightness(1.6); }
+}
+@keyframes shake {
+  20%, 60% { translate: calc(var(--cell) * -0.06) 0; }
+  40%, 80% { translate: calc(var(--cell) * 0.06) 0; }
+}
+.core-tile {
+  width: var(--cell);
+  height: var(--cell);
+  border-radius: var(--radius);
+  display: grid;
+  place-items: center;
+  border: 1px dashed rgb(251 191 36 / 0.45);
+  background: radial-gradient(circle, rgb(251 191 36 / 0.16), transparent 70%);
+  color: #fbbf24;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
